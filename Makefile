@@ -1,33 +1,25 @@
-PROG=programmet.exe
-SOURCES=main.cpp
-DEPS=
-CC=g++
-CFLAGS=-Wall  -std=c++20
-DEBUG?=1
+PROG = main
+SRC = main.cpp 
+CFLAGS = -g -std=c++20 -Wall -Wno-deprecated-declarations
+LIBS = -L/opt/homebrew/opt/openssl@3/lib -lssl -lcrypto
+INCLUDES = -I/opt/homebrew/opt/openssl@3/include
+CC = g++
+CPPCHECK = cppcheck
 
-ifeq ($(DEBUG), 1)
-	CFLAGS += -g
-	OUTPUTDIR=bin/debug
-	PROG=programmet-debug.exe
-else
-	CFLAGS += -g0 -O3
-	OUTPUTDIR=bin/release
-endif
+launch: all
+	./$(PROG)
 
+all: $(PROG)
 
-OBJS =  $(addprefix $(OUTPUTDIR)/,$(SOURCES:.cpp=.o))
-
-$(PROG): $(OUTPUTDIR) $(OBJS) 
-	$(CC) $(CFLAGS) -o $(PROG) $(OBJS)
-
-$(OUTPUTDIR)/%.o: %.cpp $(DEPS)
-	$(CC) $(CFLAGS) -o $@ -c $< 
+$(PROG): $(SRC)
+	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $(SRC) $(LIBS) $(INCLUDES)
 
 clean:
-	@del /q "$(OUTPUTDIR)" 
-	@del /q $(PROG)
+	rm -f $(PROG)
 
-$(OUTPUTDIR):
-	@mkdir "$(OUTPUTDIR)"
+.PHONY: all clean cppcheck
 
-.PHONY: clean test
+cppcheck:
+	@$(CPPCHECK) --quiet --enable=all --error-exitcode=1 \
+	--inline-suppr \
+	$(SRC)

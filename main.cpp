@@ -1,7 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
+#include <unistd.h>
 #include <openssl/md5.h>
+
+
 
 
 bool isValidEmail(std::string email) {
@@ -46,22 +49,43 @@ void createUser() {
     std::cin >> username;
     if (!isValidEmail(username) || userExists(username)) {
         std::cout << "Invalid email or user already exists.\n";
-        return;
+        while(!isValidEmail(username) || userExists(username)){
+            std::cout << "Enter email: ";
+            std::cin >> username;
+            if (!isValidEmail(username) || userExists(username)) {
+                std::cout << "Invalid email or user already exists.\n";
+            }
+        }
     }
-    std::cout << "Enter password: ";
-    std::cin >> password;
-    if (!isValidPassword(password)) {
-        std::cout << "Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.\n";
-        return;
-    }
+    do {
+        std::cout << "Enter password: ";
+        std::cin >> password;
+        if (!isValidPassword(password)) {
+            std::cout << "Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, one digit, and one special character.\n";
+            
+        }
+    } while (!isValidPassword(password));
     std::ofstream file("users.txt", std::ios_base::app);
-    file << username << ":" << md5(password) << "\n";
+    file << username << ":" << md5(password) << std::endl;
+    std::cout << "User created successfully." << std::endl;
+    
 }
+
 
 void testLogin() {
     std::string username, password;
     std::cout << "Enter email: ";
     std::cin >> username;
+    if (!isValidEmail(username)){
+        std::cout << "Invalid email format, Try again!\n";
+        while(!isValidEmail(username)){
+            std::cout << "Enter email: ";
+            std::cin >> username;
+            if (!isValidEmail(username)) {
+                std::cout << "Invalid email format, Try again!\n";
+            }
+        }
+    }
     std::cout << "Enter password: ";
     std::cin >> password;
     std::ifstream file("users.txt");
@@ -87,8 +111,11 @@ int main() {
         std::cin >> choice;
         if (choice == 1) createUser();
         else if (choice == 2) testLogin();
-        else if (choice == 0) break;
-        else{
+        else if (choice == 0) {
+        std::cout << "Closing Program..." << std::endl;
+        sleep(1);
+        break;
+        }else{
         std::cout << "Invalid choice.\n" << std::endl;
         }
     }
